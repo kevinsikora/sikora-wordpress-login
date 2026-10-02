@@ -1,0 +1,122 @@
+/**
+ * Login layout: keep the form fully visible; only customize background + branding.
+ * Avoid flex/grid on body — those clip core form controls
+ * (core uses .login form { overflow: hidden } with floated submit/remember-me).
+ */
+
+/*
+ * Background goes directly on body — no pseudo-element and no z-index layering.
+ * `background-attachment: fixed` makes the positioning area the viewport, so
+ * `cover` enlarges the image only enough to fill the screen rather than the
+ * full document height. The image URL itself is added inline by the plugin.
+ */
+body.login {
+	margin: 0;
+	padding: 0;
+	min-height: 100vh;
+	background-size: cover !important;
+	background-position: center center !important;
+	background-repeat: no-repeat !important;
+	background-attachment: fixed !important;
+}
+
+/*
+ * Dark base only when a photo is set, so the white footer links below stay
+ * legible while a large image downloads or if it fails to load. Without an
+ * image the page keeps core's light background and core's link colors.
+ */
+body.login.sikora-has-bg {
+	background-color: #1d2327 !important;
+}
+
+/* Core centers #login with margin:auto. */
+#login {
+	position: relative;
+}
+
+/* Allow the full form (username, password, submit) to paint; do not clip. */
+.login form {
+	overflow: visible !important;
+	height: auto !important;
+	max-height: none !important;
+}
+
+/*
+ * Core contains the floated "Remember Me" / "Log In" row with overflow: hidden,
+ * which also clips. Overriding overflow above drops that containment, so the
+ * white box stops short of the button — this clears the floats instead.
+ */
+.login form::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Branding only: hide the WordPress logo (not a security control). */
+.login h1.wp-login-logo {
+	display: none !important;
+}
+
+/* Keep the login footer links visible (they are shown unless "Remove" is checked). */
+.login #nav,
+.login #backtoblog {
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	text-align: center;
+}
+
+/*
+ * These links sit outside the white form over the photo. White text with a layered
+ * shadow keeps them legible without painting a background behind them. Only applied
+ * when a background image is set; otherwise core colors are fine.
+ */
+body.sikora-has-bg #nav a,
+body.sikora-has-bg #backtoblog a,
+body.sikora-has-bg .privacy-policy-page-link a {
+	color: #fff !important;
+	background: none !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.7);
+}
+
+body.sikora-has-bg #nav a:hover,
+body.sikora-has-bg #nav a:focus,
+body.sikora-has-bg #backtoblog a:hover,
+body.sikora-has-bg #backtoblog a:focus,
+body.sikora-has-bg .privacy-policy-page-link a:hover,
+body.sikora-has-bg .privacy-policy-page-link a:focus {
+	color: #fff !important;
+	background: none !important;
+}
+
+/* Never underlined, including on hover and focus. */
+.login #nav a,
+.login #nav a:hover,
+.login #nav a:focus,
+.login #backtoblog a,
+.login #backtoblog a:hover,
+.login #backtoblog a:focus {
+	text-decoration: none !important;
+}
+
+/*
+ * Core's `a:focus` paints a blue ring (box-shadow) that looks like a box around
+ * these links after a click. Suppress it only for pointer-driven focus; keyboard
+ * focus still matches :focus-visible and keeps the ring for accessibility.
+ */
+.login #nav a:focus:not(:focus-visible),
+.login #backtoblog a:focus:not(:focus-visible),
+.login .privacy-policy-page-link a:focus:not(:focus-visible) {
+	box-shadow: none !important;
+	outline: none !important;
+}
+
+/* Only hide the lost-password link when the "Remove" setting is checked. */
+body.sikora-password-reset-disabled a.wp-login-lost-password {
+	display: none !important;
+}
+
+.login .privacy-policy-page-link a {
+	text-decoration: none !important;
+}
+
