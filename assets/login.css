@@ -67,24 +67,25 @@ body.login.sikora-has-bg {
 }
 
 /*
- * These links sit outside the white form over the photo. White text with a layered
- * shadow keeps them legible without painting a background behind them. Only applied
- * when a background image is set; otherwise core colors are fine.
+ * These links sit outside the white form, over the background. White text with a
+ * layered shadow keeps them legible without painting a background behind them.
+ * Only applied when the background is dark (any photo, or a dark color); on a
+ * light background color the core link colors are left alone.
  */
-body.sikora-has-bg #nav a,
-body.sikora-has-bg #backtoblog a,
-body.sikora-has-bg .privacy-policy-page-link a {
+body.sikora-light-links #nav a,
+body.sikora-light-links #backtoblog a,
+body.sikora-light-links .privacy-policy-page-link a {
 	color: #fff !important;
 	background: none !important;
 	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.7);
 }
 
-body.sikora-has-bg #nav a:hover,
-body.sikora-has-bg #nav a:focus,
-body.sikora-has-bg #backtoblog a:hover,
-body.sikora-has-bg #backtoblog a:focus,
-body.sikora-has-bg .privacy-policy-page-link a:hover,
-body.sikora-has-bg .privacy-policy-page-link a:focus {
+body.sikora-light-links #nav a:hover,
+body.sikora-light-links #nav a:focus,
+body.sikora-light-links #backtoblog a:hover,
+body.sikora-light-links #backtoblog a:focus,
+body.sikora-light-links .privacy-policy-page-link a:hover,
+body.sikora-light-links .privacy-policy-page-link a:focus {
 	color: #fff !important;
 	background: none !important;
 }
