@@ -4,7 +4,7 @@ Customize the WordPress login screen with a Media Library background image and a
 
 | | |
 | --- | --- |
-| **Version** | 2.1.0 |
+| **Version** | 2.2.0 |
 | **Requires at least** | WordPress 6.0 |
 | **Tested up to** | 6.7 |
 | **Requires PHP** | 7.4 |
@@ -17,17 +17,17 @@ Sikora WordPress Login customizes `wp-login.php` for a cleaner, on-brand experie
 
 ### Features
 
+- Choose a business logo from the Media Library (shown in place of the WordPress logo)
 - Choose a full-screen login background from the Media Library
 - Pick a background color (default `#eaeaea`) used when no background image is selected
 - Center the login form in the viewport
-- Hide the WordPress logo link (branding)
 - Optionally hide the "Lost your password?" link (branding only)
 - Optional setting to fully disable password reset on `wp-login.php`
 - Stores an attachment ID (not a raw URL) and validates images server-side
 
 ### Security notes
 
-- Background images must be JPEG, PNG, GIF, or WebP (SVG is not allowed)
+- Background and logo images must be JPEG, PNG, GIF, or WebP (SVG is not allowed)
 - Images are checked for MIME type, file contents when available, and attachment status
 - Hiding login links with CSS is for branding — it is not a security control
 - Password reset links are shown by default; check **Remove** under Password Reset Link in settings to hide them and block the reset flow
@@ -47,9 +47,10 @@ Developers can extend behavior with:
 1. Upload the `sikora-wordpress-login` folder to the `/wp-content/plugins/` directory, or install the ZIP via **Plugins → Add New → Upload Plugin**.
 2. Activate the plugin through the **Plugins** screen.
 3. Go to **Settings → Sikora WordPress Login**.
-4. Choose a background image from the Media Library and save.
-5. Optionally pick a **Background Color**, used only when no background image is selected.
-6. Optionally check **Remove** under Password Reset Link if you want to hide password recovery on wp-login.php.
+4. Optionally choose a **Business Logo** from the Media Library (shown at 84×84 px).
+5. Choose a background image from the Media Library and save.
+6. Optionally pick a **Background Color**, used only when no background image is selected.
+7. Optionally check **Remove** under Password Reset Link if you want to hide password recovery on wp-login.php.
 
 ### Development checkout
 
@@ -101,6 +102,10 @@ sikora-wordpress-login/
 
 ## Changelog
 
+### 2.2.0
+
+- New **Business Logo** setting: choose a Media Library image shown in the WordPress logo slot (84×84 px); omitted when none is selected
+
 ### 2.1.0
 
 - New **Background Color** setting with a color picker, used when no background image is selected (default `#eaeaea`)
@@ -124,6 +129,10 @@ sikora-wordpress-login/
 ### 1.0.0
 
 - Initial release: Media Library background, centered login form, hide logo and login links
+
+## Upgrade notice (2.2.0)
+
+Adds a Business Logo setting. Choose a Media Library image to show in place of the WordPress logo (84×84 px). With no logo selected, that area stays empty.
 
 ## Upgrade notice (2.1.0)
 

@@ -9,6 +9,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
     exit;
 }
 
+delete_option( 'sikora_login_logo_image' );
 delete_option( 'sikora_login_bg_image' );
 delete_option( 'sikora_login_bg_color' );
 delete_option( 'sikora_login_disable_password_reset' );
@@ -20,6 +21,7 @@ if ( is_multisite() ) {
 
     foreach ( $site_ids as $site_id ) {
         switch_to_blog( (int) $site_id );
+        delete_option( 'sikora_login_logo_image' );
         delete_option( 'sikora_login_bg_image' );
         delete_option( 'sikora_login_bg_color' );
         delete_option( 'sikora_login_disable_password_reset' );
