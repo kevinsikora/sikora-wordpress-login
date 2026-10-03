@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Sikora WordPress Login
  * Description:       Customizes the WordPress admin dialog: sets a custom background image (chosen from the Media Library), hides the WordPress logo/link, and can optionally remove the "Lost your password?" link and password reset flow.
- * Version:           2.1.0
+ * Version:           2.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            <a href="https://sikoracollective.com/">Sikora Collective</a>
@@ -39,7 +39,26 @@ define( 'SIKORA_LOGIN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
  * @since 2.0.0
  * @var string
  */
-define( 'SIKORA_LOGIN_VERSION', '2.1.0' );
+define( 'SIKORA_LOGIN_VERSION', '2.2.0' );
+
+/**
+ * Option name for the login business logo Media Library attachment ID.
+ *
+ * Stores an integer attachment ID (not a raw URL). Displayed in place of the
+ * WordPress logo when set; when empty the logo area is omitted.
+ *
+ * @since 2.2.0
+ * @var string
+ */
+define( 'SIKORA_LOGIN_LOGO_OPTION', 'sikora_login_logo_image' );
+
+/**
+ * Display size of the login logo area in pixels (matches WordPress core logo).
+ *
+ * @since 2.2.0
+ * @var int
+ */
+define( 'SIKORA_LOGIN_LOGO_SIZE', 84 );
 
 /**
  * Option name for the login background Media Library attachment ID.
@@ -264,6 +283,39 @@ function sikora_sanitize_bg_image( $value ) {
 }
 
 /**
+ * Sanitizes the business logo option before it is saved.
+ *
+ * Same attachment rules as the background image. `options.php` passes `null`
+ * when a field is absent from POST; that must not clear an existing logo.
+ *
+ * @since 2.2.0
+ *
+ * @param mixed $value Raw value from the settings form.
+ * @return int Attachment ID to store, or 0 to clear the setting.
+ */
+function sikora_sanitize_logo_image( $value ) {
+	$previous = (int) get_option( SIKORA_LOGIN_LOGO_OPTION, 0 );
+
+	// Field omitted from POST — keep the existing saved logo.
+	if ( null === $value ) {
+		return $previous;
+	}
+
+	$id = absint( $value );
+
+	// Explicit remove.
+	if ( 0 === $id ) {
+		return 0;
+	}
+
+	if ( sikora_is_allowed_bg_image( $id ) ) {
+		return $id;
+	}
+
+	return sikora_is_allowed_bg_image( $previous ) ? $previous : 0;
+}
+
+/**
  * Returns the stored login background color.
  *
  * Re-sanitizes on read so a hand-edited option can never reach the stylesheet.
@@ -432,6 +484,21 @@ add_action( 'add_option_' . SIKORA_LOGIN_BG_OPTION, 'sikora_login_after_bg_optio
 add_action( 'update_option_' . SIKORA_LOGIN_BG_OPTION, 'sikora_login_after_bg_option_saved' );
 
 /**
+ * Sets autoload to no after the logo option is added or updated.
+ *
+ * Hooked to `add_option_{$option}` and `update_option_{$option}`.
+ *
+ * @since 2.2.0
+ *
+ * @return void
+ */
+function sikora_login_after_logo_option_saved() {
+	sikora_login_set_option_autoload_no( SIKORA_LOGIN_LOGO_OPTION );
+}
+add_action( 'add_option_' . SIKORA_LOGIN_LOGO_OPTION, 'sikora_login_after_logo_option_saved' );
+add_action( 'update_option_' . SIKORA_LOGIN_LOGO_OPTION, 'sikora_login_after_logo_option_saved' );
+
+/**
  * Sets autoload to no after the background color option is added or updated.
  *
  * Hooked to `add_option_{$option}` and `update_option_{$option}`.
@@ -486,6 +553,29 @@ function sikora_login_clear_invalid_bg_option() {
 }
 
 /**
+ * Clears a stored logo attachment ID only when the media was deleted or is disallowed.
+ *
+ * @since 2.2.0
+ *
+ * @return bool True if an invalid value was cleared; false otherwise.
+ */
+function sikora_login_clear_invalid_logo_option() {
+	$attachment_id = (int) get_option( SIKORA_LOGIN_LOGO_OPTION, 0 );
+
+	if ( ! $attachment_id ) {
+		return false;
+	}
+
+	if ( sikora_is_allowed_bg_image( $attachment_id ) ) {
+		return false;
+	}
+
+	update_option( SIKORA_LOGIN_LOGO_OPTION, 0, false );
+
+	return true;
+}
+
+/**
  * Runs on plugin activation: clears invalid backgrounds and normalizes autoload flags.
  *
  * Registered via {@see register_activation_hook()}.
@@ -496,9 +586,14 @@ function sikora_login_clear_invalid_bg_option() {
  */
 function sikora_login_activate() {
 	sikora_login_clear_invalid_bg_option();
+	sikora_login_clear_invalid_logo_option();
 
 	if ( false !== get_option( SIKORA_LOGIN_BG_OPTION, false ) ) {
 		sikora_login_set_option_autoload_no( SIKORA_LOGIN_BG_OPTION );
+	}
+
+	if ( false !== get_option( SIKORA_LOGIN_LOGO_OPTION, false ) ) {
+		sikora_login_set_option_autoload_no( SIKORA_LOGIN_LOGO_OPTION );
 	}
 
 	if ( ! sikora_login_store_reset_option_default() ) {
@@ -596,6 +691,7 @@ function sikora_login_admin_validate_saved_bg() {
 	}
 
 	sikora_login_clear_invalid_bg_option();
+	sikora_login_clear_invalid_logo_option();
 }
 add_action( 'admin_init', 'sikora_login_admin_validate_saved_bg' );
 
@@ -996,6 +1092,18 @@ add_action( 'admin_menu', 'sikora_register_settings_page' );
 function sikora_register_settings() {
 	register_setting(
 		'sikora_wordpress_login_settings_group',
+		SIKORA_LOGIN_LOGO_OPTION,
+		array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sikora_sanitize_logo_image',
+			'default'           => '0',
+			'show_in_rest'      => false,
+			'autoload'          => false,
+		)
+	);
+
+	register_setting(
+		'sikora_wordpress_login_settings_group',
 		SIKORA_LOGIN_BG_OPTION,
 		array(
 			'type'              => 'string',
@@ -1092,8 +1200,8 @@ add_action( 'admin_enqueue_scripts', 'sikora_enqueue_admin_scripts' );
 /**
  * Renders the plugin settings page markup.
  *
- * Outputs the background image picker, the background color picker, and the
- * optional password-reset toggle.
+ * Outputs the business logo picker, background image picker, the background color
+ * picker, and the optional password-reset toggle.
  * Requires {@see sikora_login_manage_capability()}.
  *
  * @since 2.0.0
@@ -1107,9 +1215,29 @@ function sikora_render_settings_page() {
 
 	sikora_login_discard_options_head_buffer();
 
+	$logo_id       = (int) get_option( SIKORA_LOGIN_LOGO_OPTION, 0 );
+	$current_logo  = '';
 	$attachment_id = (int) get_option( SIKORA_LOGIN_BG_OPTION, 0 );
 	$current_image = '';
 	$bg_color      = sikora_login_get_bg_color();
+
+	if ( $logo_id ) {
+		$current_logo = sikora_get_validated_bg_url( $logo_id );
+
+		if ( ! $current_logo ) {
+			$fallback = wp_get_attachment_image_url( $logo_id, 'thumbnail' );
+			if ( ! $fallback ) {
+				$fallback = wp_get_attachment_url( $logo_id );
+			}
+			if ( $fallback ) {
+				$current_logo = (string) esc_url_raw( $fallback, array( 'http', 'https' ) );
+			}
+		}
+
+		if ( ! $current_logo && ! get_post( $logo_id ) ) {
+			$logo_id = 0;
+		}
+	}
 
 	if ( $attachment_id ) {
 		// Always try to show a preview for a stored Media Library image.
@@ -1137,6 +1265,52 @@ function sikora_render_settings_page() {
 			<?php settings_fields( 'sikora_wordpress_login_settings_group' ); ?>
 
 			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row">
+						<label for="sikora-logo-image-id">
+							<?php esc_html_e( 'Business Logo', 'sikora-wordpress-login' ); ?>
+						</label>
+					</th>
+					<td>
+						<img
+							id="sikora-logo-preview"
+							src="<?php echo $current_logo ? esc_url( $current_logo, array( 'http', 'https' ) ) : ''; ?>"
+							alt="<?php echo $current_logo ? esc_attr__( 'Current Sikora WordPress Login business logo', 'sikora-wordpress-login' ) : ''; ?>"
+							style="max-width:84px; max-height:84px; margin-bottom:10px; <?php echo $current_logo ? 'display:block;' : 'display:none;'; ?>"
+						>
+
+						<input
+							type="hidden"
+							id="sikora-logo-image-id"
+							name="<?php echo esc_attr( SIKORA_LOGIN_LOGO_OPTION ); ?>"
+							value="<?php echo esc_attr( $logo_id ); ?>"
+						>
+
+						<button type="button" id="sikora-choose-logo" class="button button-secondary">
+							<?php esc_html_e( 'Choose Logo', 'sikora-wordpress-login' ); ?>
+						</button>
+
+						<button
+							type="button"
+							id="sikora-remove-logo"
+							class="button button-link-delete"
+							style="margin-left:10px;<?php echo ( $current_logo || $logo_id ) ? '' : ' display:none;'; ?>"
+						>
+							<?php esc_html_e( 'Remove Logo', 'sikora-wordpress-login' ); ?>
+						</button>
+
+						<p class="description">
+							<?php
+							printf(
+								/* translators: 1: logo width in pixels, 2: logo height in pixels. */
+								esc_html__( 'Maximum display size: %1$d×%2$d pixels. Larger images are scaled down to fit. Only JPEG, PNG, GIF, or WebP images can be selected.', 'sikora-wordpress-login' ),
+								(int) SIKORA_LOGIN_LOGO_SIZE,
+								(int) SIKORA_LOGIN_LOGO_SIZE
+							);
+							?>
+						</p>
+					</td>
+				</tr>
 				<tr>
 					<th scope="row">
 						<label for="sikora-bg-image-id">
@@ -1172,7 +1346,7 @@ function sikora_render_settings_page() {
 						</button>
 
 						<p class="description">
-							<?php esc_html_e( 'Only JPEG, PNG, GIF, or WebP images can be selected from your Media Library.', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Only JPEG, PNG, GIF, or WebP images can be selected.', 'sikora-wordpress-login' ); ?>
 						</p>
 					</td>
 				</tr>
@@ -1264,27 +1438,40 @@ function sikora_login_custom_styles() {
 	}
 
 	$bg_image = sikora_get_validated_bg_url();
+	$logo_url = sikora_get_validated_bg_url( (int) get_option( SIKORA_LOGIN_LOGO_OPTION, 0 ) );
+	$rules    = array();
 
 	// Image wins; the color is only a fallback for when no image is set.
 	if ( $bg_image ) {
-		$rule = sprintf(
+		$rules[] = sprintf(
 			'body.login{background-image:url("%1$s") !important;}',
 			esc_url( $bg_image, array( 'http', 'https' ) )
 		);
 	} else {
 		$bg_color = sikora_login_get_bg_color();
 
-		if ( ! $bg_color ) {
-			return;
+		if ( $bg_color ) {
+			$rules[] = sprintf(
+				'body.login{background-color:%1$s !important;}',
+				$bg_color // already sanitized to a hex color
+			);
 		}
+	}
 
-		$rule = sprintf(
-			'body.login{background-color:%1$s !important;}',
-			$bg_color // already sanitized to a hex color
+	if ( $logo_url ) {
+		$size    = (int) SIKORA_LOGIN_LOGO_SIZE;
+		$rules[] = sprintf(
+			'body.login.sikora-has-logo h1.wp-login-logo a{background-image:url("%1$s") !important;background-size:contain !important;background-position:center center !important;background-repeat:no-repeat !important;width:%2$dpx !important;height:%2$dpx !important;}',
+			esc_url( $logo_url, array( 'http', 'https' ) ),
+			$size
 		);
 	}
 
-	wp_add_inline_style( 'sikora-wordpress-login', $rule );
+	if ( empty( $rules ) ) {
+		return;
+	}
+
+	wp_add_inline_style( 'sikora-wordpress-login', implode( '', $rules ) );
 }
 add_action( 'login_enqueue_scripts', 'sikora_login_custom_styles' );
 
@@ -1313,6 +1500,10 @@ function sikora_login_is_password_reset_disabled() {
 function sikora_login_body_class( $classes ) {
 	if ( sikora_login_is_password_reset_disabled() ) {
 		$classes[] = 'sikora-password-reset-disabled';
+	}
+
+	if ( sikora_get_validated_bg_url( (int) get_option( SIKORA_LOGIN_LOGO_OPTION, 0 ) ) ) {
+		$classes[] = 'sikora-has-logo';
 	}
 
 	if ( sikora_get_validated_bg_url() ) {

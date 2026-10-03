@@ -52,9 +52,14 @@ body.login.sikora-has-bg {
 	clear: both;
 }
 
-/* Branding only: hide the WordPress logo (not a security control). */
+/* Hide the WordPress logo by default. Show the slot only when a business logo is set. */
 .login h1.wp-login-logo {
 	display: none !important;
+}
+
+/* body already has class "login" — do not require a nested .login descendant. */
+body.login.sikora-has-logo h1.wp-login-logo {
+	display: block !important;
 }
 
 /* Keep the login footer links visible (they are shown unless "Remove" is checked). */
