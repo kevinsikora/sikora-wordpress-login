@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Sikora WordPress Login
  * Description:       Customizes the WordPress admin dialog: sets a custom background image (chosen from the Media Library), hides the WordPress logo/link, and can optionally remove the "Lost your password?" link and password reset flow.
- * Version:           2.2.0
+ * Version:           2.2.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            <a href="https://sikoracollective.com/">Sikora Collective</a>
@@ -39,7 +39,7 @@ define( 'SIKORA_LOGIN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
  * @since 2.0.0
  * @var string
  */
-define( 'SIKORA_LOGIN_VERSION', '2.2.0' );
+define( 'SIKORA_LOGIN_VERSION', '2.2.1' );
 
 /**
  * Option name for the login business logo Media Library attachment ID.
@@ -1607,74 +1607,3 @@ function sikora_login_logo_url_title() {
 }
 add_filter( 'login_headertext', 'sikora_login_logo_url_title' );
 add_filter( 'login_headertitle', 'sikora_login_logo_url_title' );
-
-/**
- * Prints CSS for the developer credit row in the admin footer.
- *
- * Places the credit on its own full-width row above `#footer-left` /
- * `#footer-upgrade` so "Thank you…" and the version stay on one line.
- * Also suppresses icon imagery inside the credit.
- *
- * @since 2.0.0
- *
- * @return void
- */
-function sikora_login_admin_footer_credit_styles() {
-	?>
-	<style id="sikora-login-developer-credit-css">
-		#wpfooter .sikora-login-developer-credit {
-			display: block;
-			float: none;
-			clear: both;
-			width: 100%;
-			margin: 0 0 6px;
-			padding: 0;
-			text-align: left;
-		}
-		#wpfooter .sikora-login-developer-credit img,
-		#wpfooter .sikora-login-developer-credit svg,
-		#wpfooter .sikora-login-developer-credit .dashicons,
-		#wpfooter .sikora-login-developer-credit [class*="dashicons"] {
-			display: none !important;
-		}
-		#wpfooter .sikora-login-developer-credit::before,
-		#wpfooter .sikora-login-developer-credit::after,
-		#wpfooter .sikora-login-developer-credit a::before,
-		#wpfooter .sikora-login-developer-credit a::after,
-		#wpfooter .sikora-login-developer-credit *::before,
-		#wpfooter .sikora-login-developer-credit *::after {
-			content: none !important;
-			display: none !important;
-		}
-	</style>
-	<?php
-}
-add_action( 'admin_head', 'sikora_login_admin_footer_credit_styles' );
-
-/**
- * Prints the developer credit above the thank-you / version footer row.
- *
- * Hooked to `in_admin_footer` so the credit is outside `#footer-left`, keeping
- * "Thank you for creating with WordPress." and the version on the same row.
- *
- * @since 2.0.0
- *
- * @return void
- */
-function sikora_login_print_developer_credit() {
-	$link = sprintf(
-		'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>',
-		esc_url( 'https://www.SikoraCollective.com' ),
-		esc_html__( 'Sikora Collective', 'sikora-wordpress-login' )
-	);
-
-	$credit = sprintf(
-		/* translators: %s: HTML text link to Sikora Collective. No icons or trailing punctuation. */
-		__( 'Developed by %s', 'sikora-wordpress-login' ),
-		$link
-	);
-
-	echo '<p class="sikora-login-developer-credit">' . $credit . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped link + translated plain text.
-}
-add_action( 'in_admin_footer', 'sikora_login_print_developer_credit' );
-
