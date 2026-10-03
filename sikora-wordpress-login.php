@@ -169,6 +169,7 @@ function sikora_login_allowed_bg_mimes( $attachment_id = 0 ) {
  * Determines whether an attachment may be used as the login background.
  *
  * Accepts only existing Media Library JPEG, PNG, GIF, or WebP images (not SVG).
+ * Checks attachment metadata, file extension, and on-disk image MIME contents.
  *
  * @since 2.0.0
  *
@@ -207,12 +208,23 @@ function sikora_is_allowed_bg_image( $attachment_id ) {
 	}
 
 	$file = get_attached_file( $attachment_id );
-	if ( $file ) {
-		$extension   = strtolower( pathinfo( $file, PATHINFO_EXTENSION ) );
-		$allowed_ext = array( 'jpg', 'jpeg', 'png', 'gif', 'webp' );
-		if ( ! in_array( $extension, $allowed_ext, true ) ) {
-			return false;
-		}
+	if ( ! $file || ! is_readable( $file ) ) {
+		return false; // require a readable file, not just metadata
+	}
+
+	$extension   = strtolower( pathinfo( $file, PATHINFO_EXTENSION ) );
+	$allowed_ext = array( 'jpg', 'jpeg', 'png', 'gif', 'webp' );
+	if ( ! in_array( $extension, $allowed_ext, true ) ) {
+		return false;
+	}
+
+	// Reject files whose contents are not a real allowed image (e.g. SVG renamed to .jpg).
+	$detected_mime = wp_get_image_mime( $file );
+	if ( 'image/jpg' === $detected_mime ) {
+		$detected_mime = 'image/jpeg';
+	}
+	if ( ! $detected_mime || ! in_array( $detected_mime, $allowed_mimes, true ) ) {
+		return false;
 	}
 
 	return true;
