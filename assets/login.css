@@ -118,6 +118,15 @@ body.sikora-password-reset-disabled a.wp-login-lost-password {
 }
 
 /*
+ * Core gives the Privacy Policy block `margin: 3em 0 2em`, which leaves a much
+ * larger gap under "Go to site" than the 16px between "Lost your password?" and
+ * "Go to site". Match that 16px spacing (margins collapse with #backtoblog).
+ */
+.login .privacy-policy-page-link {
+	margin-top: 16px;
+}
+
+/*
  * Core colors #nav and #backtoblog links #50575e but leaves the Privacy Policy
  * link on the generic blue link color, so match it to the other two. The
  * sikora-light-links rules above already turn all three white together.
