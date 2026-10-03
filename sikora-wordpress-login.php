@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Sikora WordPress Login
  * Description:       Customizes the WordPress admin dialog: sets a custom background image (chosen from the Media Library), hides the WordPress logo/link, and can optionally remove the "Lost your password?" link and password reset flow.
- * Version:           2.0.0
+ * Version:           2.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            <a href="https://sikoracollective.com/">Sikora Collective</a>
@@ -39,7 +39,7 @@ define( 'SIKORA_LOGIN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
  * @since 2.0.0
  * @var string
  */
-define( 'SIKORA_LOGIN_VERSION', '2.0.0' );
+define( 'SIKORA_LOGIN_VERSION', '2.1.0' );
 
 /**
  * Option name for the login background Media Library attachment ID.
@@ -62,6 +62,17 @@ define( 'SIKORA_LOGIN_BG_OPTION', 'sikora_login_bg_image' );
  * @var string
  */
 define( 'SIKORA_LOGIN_BG_COLOR_OPTION', 'sikora_login_bg_color' );
+
+/**
+ * Default login background color.
+ *
+ * Stored on activation (and on the first request of an already-active install)
+ * when no value exists yet, so new installs have a color from the start.
+ *
+ * @since 2.1.0
+ * @var string
+ */
+define( 'SIKORA_LOGIN_BG_COLOR_DEFAULT', '#eaeaea' );
 
 /**
  * Option name for whether password reset on wp-login.php is disabled.
@@ -123,41 +134,6 @@ function sikora_login_asset_version( $relative_path ) {
 	}
 
 	return SIKORA_LOGIN_VERSION;
-}
-
-/**
- * Returns the maximum allowed background image dimensions in pixels.
- *
- * @since 2.0.0
- *
- * @return int[] {
- *     @type int $0 Maximum width in pixels.
- *     @type int $1 Maximum height in pixels.
- * }
- */
-function sikora_login_max_bg_dimensions() {
-	/**
-	 * Filters the maximum allowed background image width in pixels.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @param int $width Maximum width. Default 4096.
-	 */
-	$width = (int) apply_filters( 'sikora_login_max_bg_width', 4096 );
-
-	/**
-	 * Filters the maximum allowed background image height in pixels.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @param int $height Maximum height. Default 4096.
-	 */
-	$height = (int) apply_filters( 'sikora_login_max_bg_height', 4096 );
-
-	return array(
-		max( 1, $width ),
-		max( 1, $height ),
-	);
 }
 
 /**
@@ -279,13 +255,15 @@ function sikora_sanitize_bg_image( $value ) {
  * Returns the stored login background color.
  *
  * Re-sanitizes on read so a hand-edited option can never reach the stylesheet.
+ * Falls back to {@see SIKORA_LOGIN_BG_COLOR_DEFAULT} only when no row exists; a
+ * stored empty string means the user deliberately cleared the color.
  *
  * @since 2.1.0
  *
- * @return string Hex color (e.g. `#1d2327`), or an empty string when unset.
+ * @return string Hex color (e.g. `#eaeaea`), or an empty string when cleared.
  */
 function sikora_login_get_bg_color() {
-	$color = sanitize_hex_color( (string) get_option( SIKORA_LOGIN_BG_COLOR_OPTION, '' ) );
+	$color = sanitize_hex_color( (string) get_option( SIKORA_LOGIN_BG_COLOR_OPTION, SIKORA_LOGIN_BG_COLOR_DEFAULT ) );
 
 	return $color ? $color : '';
 }
@@ -331,7 +309,11 @@ function sikora_sanitize_bg_color( $value ) {
 	add_settings_error(
 		SIKORA_LOGIN_BG_COLOR_OPTION,
 		'sikora_login_bg_color_invalid',
-		__( 'The background color must be a hex value such as #1d2327. The previous color was kept.', 'sikora-wordpress-login' ),
+		sprintf(
+			/* translators: %s: example hex color. */
+			__( 'The background color must be a hex value such as %s. The previous color was kept.', 'sikora-wordpress-login' ),
+			SIKORA_LOGIN_BG_COLOR_DEFAULT
+		),
 		'error'
 	);
 
@@ -510,6 +492,10 @@ function sikora_login_activate() {
 	if ( ! sikora_login_store_reset_option_default() ) {
 		sikora_login_set_option_autoload_no( SIKORA_LOGIN_DISABLE_RESET_OPTION ); // row already existed
 	}
+
+	if ( ! sikora_login_store_bg_color_default() ) {
+		sikora_login_set_option_autoload_no( SIKORA_LOGIN_BG_COLOR_OPTION ); // row already existed
+	}
 }
 register_activation_hook( __FILE__, 'sikora_login_activate' );
 
@@ -533,17 +519,36 @@ function sikora_login_store_reset_option_default() {
 }
 
 /**
- * Persists the default disable-password-reset value on already-active installs.
+ * Stores the default background color when the option row is missing.
+ *
+ * An existing stored value — including a stored empty string, meaning the user
+ * cleared the color — is never overwritten because {@see add_option()} is a no-op
+ * when the row already exists.
+ *
+ * @since 2.1.0
+ *
+ * @return bool True when the default was just stored; false when a value already existed.
+ */
+function sikora_login_store_bg_color_default() {
+	if ( false !== get_option( SIKORA_LOGIN_BG_COLOR_OPTION, false ) ) {
+		return false;
+	}
+
+	return (bool) add_option( SIKORA_LOGIN_BG_COLOR_OPTION, SIKORA_LOGIN_BG_COLOR_DEFAULT, '', 'no' );
+}
+
+/**
+ * Persists plugin option defaults on already-active installs.
  *
  * The activation hook only fires once, so sites running an older build may have no
  * option row at all. Hooked to both `admin_init` and `login_init` (early) because
- * those are the only request paths that read the setting.
+ * those are the only request paths that read these settings.
  *
  * @since 2.0.0
  *
  * @return void
  */
-function sikora_login_bootstrap_reset_option() {
+function sikora_login_bootstrap_option_defaults() {
 	static $done = false;
 
 	if ( $done ) {
@@ -553,9 +558,10 @@ function sikora_login_bootstrap_reset_option() {
 	$done = true;
 
 	sikora_login_store_reset_option_default();
+	sikora_login_store_bg_color_default();
 }
-add_action( 'admin_init', 'sikora_login_bootstrap_reset_option', 1 );
-add_action( 'login_init', 'sikora_login_bootstrap_reset_option', 1 );
+add_action( 'admin_init', 'sikora_login_bootstrap_option_defaults', 1 );
+add_action( 'login_init', 'sikora_login_bootstrap_option_defaults', 1 );
 
 /**
  * Validates the saved background image during admin requests.
@@ -994,7 +1000,10 @@ function sikora_register_settings() {
 		array(
 			'type'              => 'string',
 			'sanitize_callback' => 'sikora_sanitize_bg_color',
-			'default'           => '',
+			// Do not set 'default' here: when the stored value equals a registered
+			// default, update_option() calls add_option() and the save is skipped
+			// if the row already exists (so picking a color after clearing one
+			// would never persist). Reads default via get_option( $option, '' ).
 			'show_in_rest'      => false,
 			'autoload'          => false,
 		)
@@ -1017,6 +1026,27 @@ function sikora_register_settings() {
 add_action( 'admin_init', 'sikora_register_settings' );
 
 /**
+ * Returns the settings-page CSS that tightens the color picker spacing.
+ *
+ * `.wp-picker-container` is an inline-block, so when the picker is expanded the
+ * line box it sits in reserves descender space underneath, pushing the
+ * description text away. Making it a block removes that, and the margins are
+ * declared with `!important` so other admin styles cannot reopen the gap.
+ *
+ * @since 2.1.0
+ *
+ * @return string CSS, no enclosing <style> tag.
+ */
+function sikora_login_admin_inline_css() {
+	return '
+.sikora-bg-color-cell .wp-picker-container{display:block;}
+.sikora-bg-color-cell .wp-picker-holder{line-height:0;}
+.sikora-bg-color-cell .wp-picker-container .iris-picker{margin-top:4px!important;margin-bottom:0!important;}
+.sikora-bg-color-cell p.description{margin-top:4px!important;}
+';
+}
+
+/**
  * Enqueues the Media Library modal and admin script on the plugin settings page.
  *
  * @since 2.0.0
@@ -1032,6 +1062,11 @@ function sikora_enqueue_admin_scripts( $hook ) {
 	wp_enqueue_media();
 	wp_enqueue_style( 'wp-color-picker' );
 
+	// No src: the handle exists only to carry the inline CSS below.
+	wp_register_style( 'sikora-wordpress-login-admin', false, array( 'wp-color-picker' ), SIKORA_LOGIN_VERSION );
+	wp_enqueue_style( 'sikora-wordpress-login-admin' );
+	wp_add_inline_style( 'sikora-wordpress-login-admin', sikora_login_admin_inline_css() );
+
 	wp_enqueue_script(
 		'sikora-wordpress-login-admin',
 		SIKORA_LOGIN_PLUGIN_URL . 'assets/admin.js',
@@ -1045,7 +1080,8 @@ add_action( 'admin_enqueue_scripts', 'sikora_enqueue_admin_scripts' );
 /**
  * Renders the plugin settings page markup.
  *
- * Outputs the background image picker and the optional password-reset toggle.
+ * Outputs the background image picker, the background color picker, and the
+ * optional password-reset toggle.
  * Requires {@see sikora_login_manage_capability()}.
  *
  * @since 2.0.0
@@ -1085,8 +1121,6 @@ function sikora_render_settings_page() {
 	<div class="wrap">
 		<h1 style="font-weight:700;"><?php esc_html_e( 'Sikora WordPress Login', 'sikora-wordpress-login' ); ?></h1>
 		<?php sikora_login_print_page_notice(); ?>
-		<p><?php esc_html_e( 'Customize the WordPress login page with an image from the Media Library for the background. The WordPress logo will be hidden for a better branding opportunity. Password reset links are shown by default; check Remove below to hide them and disable the reset flow.', 'sikora-wordpress-login' ); ?></p>
-
 		<form method="post" action="options.php">
 			<?php settings_fields( 'sikora_wordpress_login_settings_group' ); ?>
 
@@ -1136,29 +1170,24 @@ function sikora_render_settings_page() {
 							<?php esc_html_e( 'Background Color', 'sikora-wordpress-login' ); ?>
 						</label>
 					</th>
-					<td>
+					<td class="sikora-bg-color-cell">
 						<input
 							type="text"
 							id="sikora-bg-color"
 							class="sikora-color-field"
 							name="<?php echo esc_attr( SIKORA_LOGIN_BG_COLOR_OPTION ); ?>"
 							value="<?php echo esc_attr( $bg_color ); ?>"
-							data-default-color="#1d2327"
+							data-default-color="<?php echo esc_attr( SIKORA_LOGIN_BG_COLOR_DEFAULT ); ?>"
 						>
 
 						<p class="description">
-							<?php esc_html_e( 'The background image takes precedence. This color is only used when no background image is selected.', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'The selected color is only used when no background image is selected.', 'sikora-wordpress-login' ); ?>
 						</p>
-						<?php if ( $current_image ) : ?>
-							<p class="description" style="font-style:italic;">
-								<?php esc_html_e( 'A background image is currently selected, so this color is not being used. Remove the image to use the color instead.', 'sikora-wordpress-login' ); ?>
-							</p>
-						<?php endif; ?>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row">
-						<?php esc_html_e( 'Password Reset Links', 'sikora-wordpress-login' ); ?>
+						<?php esc_html_e( 'Password Reset Link', 'sikora-wordpress-login' ); ?>
 					</th>
 					<td>
 						<?php
@@ -1270,24 +1299,16 @@ function sikora_login_is_password_reset_disabled() {
  * @return string[]
  */
 function sikora_login_body_class( $classes ) {
-	$classes[] = sikora_login_is_password_reset_disabled()
-		? 'sikora-password-reset-disabled'
-		: 'sikora-password-reset-enabled';
+	if ( sikora_login_is_password_reset_disabled() ) {
+		$classes[] = 'sikora-password-reset-disabled';
+	}
 
 	if ( sikora_get_validated_bg_url() ) {
 		$classes[] = 'sikora-has-bg';
 		$classes[] = 'sikora-light-links'; // photos get a dark base color underneath
-	} else {
-		$bg_color = sikora_login_get_bg_color();
-
-		if ( $bg_color ) {
-			$classes[] = 'sikora-has-bg-color';
-
-			// Only switch the footer links to white when the color is dark enough.
-			if ( sikora_login_is_dark_color( $bg_color ) ) {
-				$classes[] = 'sikora-light-links';
-			}
-		}
+	} elseif ( sikora_login_is_dark_color( sikora_login_get_bg_color() ) ) {
+		// Only switch the footer links to white when the color is dark enough.
+		$classes[] = 'sikora-light-links';
 	}
 
 	return $classes;

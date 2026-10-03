@@ -117,7 +117,18 @@ body.sikora-password-reset-disabled a.wp-login-lost-password {
 	display: none !important;
 }
 
+/*
+ * Core colors #nav and #backtoblog links #50575e but leaves the Privacy Policy
+ * link on the generic blue link color, so match it to the other two. The
+ * sikora-light-links rules above already turn all three white together.
+ */
 .login .privacy-policy-page-link a {
+	color: #50575e;
 	text-decoration: none !important;
+}
+
+.login .privacy-policy-page-link a:hover,
+.login .privacy-policy-page-link a:focus {
+	color: var(--wp-admin-theme-color-darker-20, #135e96);
 }
 
