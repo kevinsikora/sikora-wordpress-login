@@ -4,7 +4,7 @@ Customize the WordPress login screen with a Media Library background image and a
 
 | | |
 | --- | --- |
-| **Version** | 2.2.0 |
+| **Version** | 2.2.1 |
 | **Requires at least** | WordPress 6.0 |
 | **Tested up to** | 6.7 |
 | **Requires PHP** | 7.4 |
@@ -102,6 +102,10 @@ sikora-wordpress-login/
 
 ## Changelog
 
+### 2.2.1
+
+- Show the plugin version beside the settings page title
+
 ### 2.2.0
 
 - New **Business Logo** setting: choose a Media Library image shown in the WordPress logo slot (84×84 px); omitted when none is selected
@@ -129,6 +133,10 @@ sikora-wordpress-login/
 ### 1.0.0
 
 - Initial release: Media Library background, centered login form, hide logo and login links
+
+## Upgrade notice (2.2.1)
+
+Shows the plugin version beside the settings page title.
 
 ## Upgrade notice (2.2.0)
 

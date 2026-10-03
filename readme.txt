@@ -4,7 +4,7 @@ Tags: login, custom login, branding, admin login, media library
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,9 @@ No. Use a dedicated security plugin for rate limiting, two-factor authentication
 
 == Changelog ==
 
+= 2.2.1 =
+* Show the plugin version beside the settings page title
+
 = 2.2.0 =
 * New "Business Logo" setting: choose a Media Library image shown in the WordPress logo slot (84×84 px); omitted when none is selected
 
@@ -107,6 +110,9 @@ No. Use a dedicated security plugin for rate limiting, two-factor authentication
 * Initial release: Media Library background, centered login form, hide logo and login links
 
 == Upgrade Notice ==
+
+= 2.2.1 =
+Shows the plugin version beside the settings page title.
 
 = 2.2.0 =
 Adds a Business Logo setting. Choose a Media Library image to show in place of the WordPress logo (84×84 px). With no logo selected, that area stays empty.
