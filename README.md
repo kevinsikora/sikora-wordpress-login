@@ -1,10 +1,10 @@
-# Sikora WordPress Login
+# Sikora Custom Login
 
 Customize the WordPress login screen with a Media Library background image and a cleaner branded layout.
 
 | | |
 | --- | --- |
-| **Version** | 2.2.1 |
+| **Version** | 2.2.2 |
 | **Requires at least** | WordPress 6.0 |
 | **Tested up to** | 6.7 |
 | **Requires PHP** | 7.4 |
@@ -13,16 +13,15 @@ Customize the WordPress login screen with a Media Library background image and a
 
 ## Description
 
-Sikora WordPress Login customizes `wp-login.php` for a cleaner, on-brand experience.
+Sikora Custom Login customizes `wp-login.php` for a cleaner, on-brand experience.
 
 ### Features
 
 - Choose a business logo from the Media Library (shown in place of the WordPress logo)
 - Choose a full-screen login background from the Media Library
-- Pick a background color (default `#eaeaea`) used when no background image is selected
+- Pick a background color used when no background image is selected
 - Center the login form in the viewport
-- Optionally hide the "Lost your password?" link (branding only)
-- Optional setting to fully disable password reset on `wp-login.php`
+- Optionally hide the "Lost your password?" link
 - Stores an attachment ID (not a raw URL) and validates images server-side
 
 ### Security notes
@@ -32,38 +31,21 @@ Sikora WordPress Login customizes `wp-login.php` for a cleaner, on-brand experie
 - Hiding login links with CSS is for branding — it is not a security control
 - Password reset links are shown by default; check **Remove** under Password Reset Link in settings to hide them and block the reset flow
 
-### Filters
-
-Developers can extend behavior with:
-
-| Filter | Purpose |
-| --- | --- |
-| `sikora_login_manage_capability` | Capability required to manage settings |
-| `sikora_login_allowed_bg_mimes` | Allowed background MIME types |
-| `sikora_login_allowed_bg_hosts` | Allowed URL hosts (useful for CDN / offloaded media) |
-
 ## Installation
 
-1. Upload the `sikora-wordpress-login` folder to the `/wp-content/plugins/` directory, or install the ZIP via **Plugins → Add New → Upload Plugin**.
+1. Install the ZIP file via **Plugins → Add New → Upload Plugin**.
 2. Activate the plugin through the **Plugins** screen.
-3. Go to **Settings → Sikora WordPress Login**.
-4. Optionally choose a **Business Logo** from the Media Library (shown at 84×84 px).
+3. Go to **Settings → Sikora Custom Login**.
+4. Optionally choose a **Business Logo** from the Media Library.
 5. Choose a background image from the Media Library and save.
 6. Optionally pick a **Background Color**, used only when no background image is selected.
 7. Optionally check **Remove** under Password Reset Link if you want to hide password recovery on wp-login.php.
-
-### Development checkout
-
-```bash
-git clone git@github.com:kevinsikora/sikora-wordpress-login.git
-# Symlink or copy into wp-content/plugins/sikora-wordpress-login
-```
 
 ## Frequently Asked Questions
 
 ### Where are the settings?
 
-**Settings → Sikora WordPress Login**.
+**Settings → Sikora Custom Login**.
 
 ### Why was my background image cleared?
 
@@ -71,7 +53,7 @@ The plugin removes saved backgrounds that are no longer allowed — for example 
 
 ### Why isn't my background color showing?
 
-The background image takes precedence. Remove the image under **Background Image** and the background color is used instead. New installs start at `#eaeaea`; clear the color field to fall back to the default WordPress background.
+The background image takes precedence. Remove the image under **Background Image** and the background color is used instead. Clear the color field to fall back to the default WordPress background.
 
 ### Does hiding "Lost your password?" block password reset?
 
@@ -88,8 +70,8 @@ No. Use a dedicated security plugin for rate limiting, two-factor authentication
 ## Project structure
 
 ```
-sikora-wordpress-login/
-├── sikora-wordpress-login.php   # Main plugin file
+sikora-custom-login/
+├── sikora-custom-login.php   # Main plugin file
 ├── uninstall.php                # Option cleanup on delete
 ├── readme.txt                   # WordPress.org readme
 ├── README.md                    # This file
@@ -102,6 +84,11 @@ sikora-wordpress-login/
 
 ## Changelog
 
+### 2.2.2
+
+- Rename plugin to Sikora Custom Login
+- Use the `sikora-custom-login` slug (no "wordpress" in the plugin identity)
+
 ### 2.2.1
 
 - Show the plugin version beside the settings page title
@@ -112,7 +99,7 @@ sikora-wordpress-login/
 
 ### 2.1.0
 
-- New **Background Color** setting with a color picker, used when no background image is selected (default `#eaeaea`)
+- New **Background Color** setting with a color picker, used when no background image is selected
 - Footer link colors now follow the background's brightness for readable contrast
 - Login CSS is printed inline instead of linked, so hosts that strip the `?ver=` cache buster can no longer serve a stale stylesheet
 - Fix the login form's white box stopping short of the Log In button
@@ -133,22 +120,6 @@ sikora-wordpress-login/
 ### 1.0.0
 
 - Initial release: Media Library background, centered login form, hide logo and login links
-
-## Upgrade notice (2.2.1)
-
-Shows the plugin version beside the settings page title.
-
-## Upgrade notice (2.2.0)
-
-Adds a Business Logo setting. Choose a Media Library image to show in place of the WordPress logo (84×84 px). With no logo selected, that area stays empty.
-
-## Upgrade notice (2.1.0)
-
-Adds a Background Color setting (default `#eaeaea`). The background image still takes precedence; the color is used only when no image is selected.
-
-## Upgrade notice (2.0.0)
-
-Hardening release. Re-activate after upgrading so activation cleanup can clear any invalid saved background. SVG backgrounds are no longer allowed.
 
 ## License
 
