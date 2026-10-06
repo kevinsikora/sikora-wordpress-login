@@ -1,16 +1,16 @@
 <?php
 /**
- * Plugin Name:       Sikora WordPress Login
+ * Plugin Name:       Sikora Custom Login
  * Description:       Customizes the WordPress admin dialog: sets a custom background image (chosen from the Media Library), hides the WordPress logo/link, and can optionally remove the "Lost your password?" link and password reset flow.
- * Version:           2.2.1
+ * Version:           2.2.2
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            <a href="https://sikoracollective.com/">Sikora Collective</a>
  * License:           GPLv2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       sikora-wordpress-login
+ * Text Domain:       sikora-custom-login
  *
- * @package SikoraWordPressLogin
+ * @package SikoraCustomLogin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -39,7 +39,7 @@ define( 'SIKORA_LOGIN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
  * @since 2.0.0
  * @var string
  */
-define( 'SIKORA_LOGIN_VERSION', '2.2.1' );
+define( 'SIKORA_LOGIN_VERSION', '2.2.2' );
 
 /**
  * Option name for the login business logo Media Library attachment ID.
@@ -120,7 +120,7 @@ define( 'SIKORA_LOGIN_INVALID_BG_NOTICE', 'sikora_login_invalid_bg_notice' );
  */
 function sikora_login_manage_capability() {
 	/**
-	 * Filters the capability required to manage Sikora WordPress Login settings.
+	 * Filters the capability required to manage Sikora Custom Login settings.
 	 *
 	 * Useful on multisite installs that need a capability other than `manage_options`.
 	 *
@@ -375,7 +375,7 @@ function sikora_sanitize_bg_color( $value ) {
 		'sikora_login_bg_color_invalid',
 		sprintf(
 			/* translators: %s: example hex color. */
-			__( 'The background color must be a hex value such as %s. The previous color was kept.', 'sikora-wordpress-login' ),
+			__( 'The background color must be a hex value such as %s. The previous color was kept.', 'sikora-custom-login' ),
 			SIKORA_LOGIN_BG_COLOR_DEFAULT
 		),
 		'error'
@@ -751,12 +751,12 @@ function sikora_login_print_page_notice() {
 	}
 
 	if ( $has_invalid_bg ) {
-		$settings_url = admin_url( 'options-general.php?page=sikora-wordpress-login' );
+		$settings_url = admin_url( 'options-general.php?page=sikora-custom-login' );
 		$parsed[]     = array(
 			'type'    => 'warning',
 			'message' => sprintf(
 				/* translators: %s: URL to the plugin settings page. */
-				__( 'Sikora WordPress Login cleared an invalid or disallowed background image (for example SVG or a missing file). <a href="%s">Choose a new JPEG, PNG, GIF, or WebP image</a>.', 'sikora-wordpress-login' ),
+				__( 'Sikora Custom Login cleared an invalid or disallowed background image (for example SVG or a missing file). <a href="%s">Choose a new JPEG, PNG, GIF, or WebP image</a>.', 'sikora-custom-login' ),
 				esc_url( $settings_url )
 			),
 			'code'    => 'sikora-invalid-bg',
@@ -777,7 +777,7 @@ function sikora_login_print_page_notice() {
 	} elseif ( $settings_updated ) {
 		$to_show[] = array(
 			'type'    => 'success',
-			'message' => __( 'Settings saved.', 'sikora-wordpress-login' ),
+			'message' => __( 'Settings saved.', 'sikora-custom-login' ),
 			'code'    => 'settings-updated',
 		);
 	} else {
@@ -794,7 +794,7 @@ function sikora_login_print_page_notice() {
 		if ( ! empty( $success_notices ) ) {
 			$to_show[] = array(
 				'type'    => 'success',
-				'message' => __( 'Settings saved.', 'sikora-wordpress-login' ),
+				'message' => __( 'Settings saved.', 'sikora-custom-login' ),
 				'code'    => 'settings-updated',
 			);
 		} else {
@@ -846,7 +846,7 @@ function sikora_login_settings_page_load() {
 	// Core options-head.php prints settings_errors() after all_admin_notices; discard that output.
 	add_action( 'all_admin_notices', 'sikora_login_ob_start_options_head_buffer', PHP_INT_MAX );
 }
-add_action( 'load-settings_page_sikora-wordpress-login', 'sikora_login_settings_page_load' );
+add_action( 'load-settings_page_sikora-custom-login', 'sikora_login_settings_page_load' );
 
 /**
  * Starts an output buffer around admin notices on this settings screen.
@@ -922,11 +922,11 @@ function sikora_login_discard_options_head_buffer() {
  */
 function sikora_login_is_settings_screen() {
 	if ( ! function_exists( 'get_current_screen' ) ) {
-		return isset( $_GET['page'] ) && 'sikora-wordpress-login' === $_GET['page']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return isset( $_GET['page'] ) && 'sikora-custom-login' === $_GET['page']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	$screen = get_current_screen();
-	return ( $screen && 'settings_page_sikora-wordpress-login' === $screen->id );
+	return ( $screen && 'settings_page_sikora-custom-login' === $screen->id );
 }
 
 /**
@@ -947,7 +947,7 @@ function sikora_login_print_invalid_bg_notice() {
 
 	delete_transient( SIKORA_LOGIN_INVALID_BG_NOTICE );
 
-	$settings_url = admin_url( 'options-general.php?page=sikora-wordpress-login' );
+	$settings_url = admin_url( 'options-general.php?page=sikora-custom-login' );
 	?>
 	<div class="notice notice-warning is-dismissible">
 		<p>
@@ -955,7 +955,7 @@ function sikora_login_print_invalid_bg_notice() {
 			echo wp_kses(
 				sprintf(
 					/* translators: %s: URL to the plugin settings page. */
-					__( 'Sikora WordPress Login cleared an invalid or disallowed background image (for example SVG or a missing file). <a href="%s">Choose a new JPEG, PNG, GIF, or WebP image</a>.', 'sikora-wordpress-login' ),
+					__( 'Sikora Custom Login cleared an invalid or disallowed background image (for example SVG or a missing file). <a href="%s">Choose a new JPEG, PNG, GIF, or WebP image</a>.', 'sikora-custom-login' ),
 					esc_url( $settings_url )
 				),
 				array(
@@ -1070,10 +1070,10 @@ function sikora_get_validated_bg_url( $attachment_id = null ) {
  */
 function sikora_register_settings_page() {
 	add_options_page(
-		__( 'Sikora WordPress Login', 'sikora-wordpress-login' ),
-		__( 'Sikora WordPress Login', 'sikora-wordpress-login' ),
+		__( 'Sikora Custom Login', 'sikora-custom-login' ),
+		__( 'Sikora Custom Login', 'sikora-custom-login' ),
 		sikora_login_manage_capability(),
-		'sikora-wordpress-login',
+		'sikora-custom-login',
 		'sikora_render_settings_page'
 	);
 }
@@ -1091,7 +1091,7 @@ add_action( 'admin_menu', 'sikora_register_settings_page' );
  */
 function sikora_register_settings() {
 	register_setting(
-		'sikora_wordpress_login_settings_group',
+		'sikora_custom_login_settings_group',
 		SIKORA_LOGIN_LOGO_OPTION,
 		array(
 			'type'              => 'string',
@@ -1103,7 +1103,7 @@ function sikora_register_settings() {
 	);
 
 	register_setting(
-		'sikora_wordpress_login_settings_group',
+		'sikora_custom_login_settings_group',
 		SIKORA_LOGIN_BG_OPTION,
 		array(
 			'type'              => 'string',
@@ -1115,7 +1115,7 @@ function sikora_register_settings() {
 	);
 
 	register_setting(
-		'sikora_wordpress_login_settings_group',
+		'sikora_custom_login_settings_group',
 		SIKORA_LOGIN_BG_COLOR_OPTION,
 		array(
 			'type'              => 'string',
@@ -1130,7 +1130,7 @@ function sikora_register_settings() {
 	);
 
 	register_setting(
-		'sikora_wordpress_login_settings_group',
+		'sikora_custom_login_settings_group',
 		SIKORA_LOGIN_DISABLE_RESET_OPTION,
 		array(
 			'type'              => 'integer',
@@ -1175,7 +1175,7 @@ function sikora_login_admin_inline_css() {
  * @return void
  */
 function sikora_enqueue_admin_scripts( $hook ) {
-	if ( 'settings_page_sikora-wordpress-login' !== $hook ) {
+	if ( 'settings_page_sikora-custom-login' !== $hook ) {
 		return;
 	}
 
@@ -1183,12 +1183,12 @@ function sikora_enqueue_admin_scripts( $hook ) {
 	wp_enqueue_style( 'wp-color-picker' );
 
 	// No src: the handle exists only to carry the inline CSS below.
-	wp_register_style( 'sikora-wordpress-login-admin', false, array( 'wp-color-picker' ), SIKORA_LOGIN_VERSION );
-	wp_enqueue_style( 'sikora-wordpress-login-admin' );
-	wp_add_inline_style( 'sikora-wordpress-login-admin', sikora_login_admin_inline_css() );
+	wp_register_style( 'sikora-custom-login-admin', false, array( 'wp-color-picker' ), SIKORA_LOGIN_VERSION );
+	wp_enqueue_style( 'sikora-custom-login-admin' );
+	wp_add_inline_style( 'sikora-custom-login-admin', sikora_login_admin_inline_css() );
 
 	wp_enqueue_script(
-		'sikora-wordpress-login-admin',
+		'sikora-custom-login-admin',
 		SIKORA_LOGIN_PLUGIN_URL . 'assets/admin.js',
 		array( 'jquery', 'media-editor', 'wp-color-picker' ),
 		sikora_login_asset_version( 'assets/admin.js' ),
@@ -1259,23 +1259,23 @@ function sikora_render_settings_page() {
 	}
 	?>
 	<div class="wrap">
-		<h1 style="font-weight:700;"><?php esc_html_e( 'Sikora WordPress Login', 'sikora-wordpress-login' ); ?></h1>
+		<h1 style="font-weight:700;"><?php esc_html_e( 'Sikora Custom Login', 'sikora-custom-login' ); ?></h1>
 		<?php sikora_login_print_page_notice(); ?>
 		<form method="post" action="options.php">
-			<?php settings_fields( 'sikora_wordpress_login_settings_group' ); ?>
+			<?php settings_fields( 'sikora_custom_login_settings_group' ); ?>
 
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row">
 						<label for="sikora-logo-image-id">
-							<?php esc_html_e( 'Business Logo', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Business Logo', 'sikora-custom-login' ); ?>
 						</label>
 					</th>
 					<td>
 						<img
 							id="sikora-logo-preview"
 							src="<?php echo $current_logo ? esc_url( $current_logo, array( 'http', 'https' ) ) : ''; ?>"
-							alt="<?php echo $current_logo ? esc_attr__( 'Current Sikora WordPress Login business logo', 'sikora-wordpress-login' ) : ''; ?>"
+							alt="<?php echo $current_logo ? esc_attr__( 'Current Sikora Custom Login business logo', 'sikora-custom-login' ) : ''; ?>"
 							style="max-width:84px; max-height:84px; margin-bottom:10px; <?php echo $current_logo ? 'display:block;' : 'display:none;'; ?>"
 						>
 
@@ -1287,7 +1287,7 @@ function sikora_render_settings_page() {
 						>
 
 						<button type="button" id="sikora-choose-logo" class="button button-secondary">
-							<?php esc_html_e( 'Choose Logo', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Choose Logo', 'sikora-custom-login' ); ?>
 						</button>
 
 						<button
@@ -1296,14 +1296,14 @@ function sikora_render_settings_page() {
 							class="button button-link-delete"
 							style="margin-left:10px;<?php echo ( $current_logo || $logo_id ) ? '' : ' display:none;'; ?>"
 						>
-							<?php esc_html_e( 'Remove Logo', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Remove Logo', 'sikora-custom-login' ); ?>
 						</button>
 
 						<p class="description">
 							<?php
 							printf(
 								/* translators: 1: logo width in pixels, 2: logo height in pixels. */
-								esc_html__( 'Maximum display size: %1$d×%2$d pixels. Larger images are scaled down to fit. Only JPEG, PNG, GIF, or WebP images can be selected.', 'sikora-wordpress-login' ),
+								esc_html__( 'Maximum display size: %1$d×%2$d pixels. Larger images are scaled down to fit. Only JPEG, PNG, GIF, or WebP images can be selected.', 'sikora-custom-login' ),
 								(int) SIKORA_LOGIN_LOGO_SIZE,
 								(int) SIKORA_LOGIN_LOGO_SIZE
 							);
@@ -1314,14 +1314,14 @@ function sikora_render_settings_page() {
 				<tr>
 					<th scope="row">
 						<label for="sikora-bg-image-id">
-							<?php esc_html_e( 'Background Image', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Background Image', 'sikora-custom-login' ); ?>
 						</label>
 					</th>
 					<td>
 						<img
 							id="sikora-image-preview"
 							src="<?php echo $current_image ? esc_url( $current_image, array( 'http', 'https' ) ) : ''; ?>"
-							alt="<?php echo $current_image ? esc_attr__( 'Current Sikora WordPress Login background', 'sikora-wordpress-login' ) : ''; ?>"
+							alt="<?php echo $current_image ? esc_attr__( 'Current Sikora Custom Login background', 'sikora-custom-login' ) : ''; ?>"
 							style="max-width:300px; margin-bottom:10px; <?php echo $current_image ? 'display:block;' : 'display:none;'; ?>"
 						>
 
@@ -1333,7 +1333,7 @@ function sikora_render_settings_page() {
 						>
 
 						<button type="button" id="sikora-choose-image" class="button button-secondary">
-							<?php esc_html_e( 'Choose Image', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Choose Image', 'sikora-custom-login' ); ?>
 						</button>
 
 						<button
@@ -1342,18 +1342,18 @@ function sikora_render_settings_page() {
 							class="button button-link-delete"
 							style="margin-left:10px;<?php echo ( $current_image || $attachment_id ) ? '' : ' display:none;'; ?>"
 						>
-							<?php esc_html_e( 'Remove Image', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Remove Image', 'sikora-custom-login' ); ?>
 						</button>
 
 						<p class="description">
-							<?php esc_html_e( 'Only JPEG, PNG, GIF, or WebP images can be selected.', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Only JPEG, PNG, GIF, or WebP images can be selected.', 'sikora-custom-login' ); ?>
 						</p>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row">
 						<label for="sikora-bg-color">
-							<?php esc_html_e( 'Background Color', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Background Color', 'sikora-custom-login' ); ?>
 						</label>
 					</th>
 					<td class="sikora-bg-color-cell">
@@ -1367,13 +1367,13 @@ function sikora_render_settings_page() {
 						>
 
 						<p class="description">
-							<?php esc_html_e( 'The selected color is only used when no background image is selected.', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'The selected color is only used when no background image is selected.', 'sikora-custom-login' ); ?>
 						</p>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row">
-						<?php esc_html_e( 'Password Reset Link', 'sikora-wordpress-login' ); ?>
+						<?php esc_html_e( 'Password Reset Link', 'sikora-custom-login' ); ?>
 					</th>
 					<td>
 						<?php
@@ -1389,13 +1389,13 @@ function sikora_render_settings_page() {
 								value="1"
 								<?php checked( sikora_login_is_password_reset_disabled() ); ?>
 							>
-							<?php esc_html_e( 'Remove', 'sikora-wordpress-login' ); ?>
+							<?php esc_html_e( 'Remove', 'sikora-custom-login' ); ?>
 						</label>
 					</td>
 				</tr>
 			</table>
 
-			<?php submit_button( __( 'Save Settings', 'sikora-wordpress-login' ) ); ?>
+			<?php submit_button( __( 'Save Settings', 'sikora-custom-login' ) ); ?>
 		</form>
 	</div>
 	<?php
@@ -1423,8 +1423,8 @@ function sikora_render_settings_page() {
  */
 function sikora_login_custom_styles() {
 	// No src: the handle exists only to carry the inline CSS below.
-	wp_register_style( 'sikora-wordpress-login', false, array( 'login' ), SIKORA_LOGIN_VERSION );
-	wp_enqueue_style( 'sikora-wordpress-login' );
+	wp_register_style( 'sikora-custom-login', false, array( 'login' ), SIKORA_LOGIN_VERSION );
+	wp_enqueue_style( 'sikora-custom-login' );
 
 	$stylesheet = SIKORA_LOGIN_PLUGIN_DIR . 'assets/login.css';
 
@@ -1433,7 +1433,7 @@ function sikora_login_custom_styles() {
 
 		if ( is_string( $css ) && '' !== $css ) {
 			// Defensive: a stray "</style>" in the asset would break out of the tag.
-			wp_add_inline_style( 'sikora-wordpress-login', str_replace( '</', '<\/', $css ) );
+			wp_add_inline_style( 'sikora-custom-login', str_replace( '</', '<\/', $css ) );
 		}
 	}
 
@@ -1471,7 +1471,7 @@ function sikora_login_custom_styles() {
 		return;
 	}
 
-	wp_add_inline_style( 'sikora-wordpress-login', implode( '', $rules ) );
+	wp_add_inline_style( 'sikora-custom-login', implode( '', $rules ) );
 }
 add_action( 'login_enqueue_scripts', 'sikora_login_custom_styles' );
 
