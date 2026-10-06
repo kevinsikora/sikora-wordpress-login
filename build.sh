@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_SLUG="sikora-wordpress-login"
+PLUGIN_SLUG="sikora-custom-login"
 MAIN_FILE="${ROOT_DIR}/${PLUGIN_SLUG}.php"
 
 if [[ ! -f "${MAIN_FILE}" ]]; then
@@ -11,7 +11,7 @@ if [[ ! -f "${MAIN_FILE}" ]]; then
 	exit 1
 fi
 
-# Read Stable/Version from the plugin header.
+# Read Version and Plugin Name from the plugin header.
 VERSION="$(
 	grep -E '^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*' "${MAIN_FILE}" \
 		| head -n 1 \
@@ -24,7 +24,25 @@ if [[ -z "${VERSION}" ]]; then
 	exit 1
 fi
 
-ZIP_NAME="${PLUGIN_SLUG}.zip"
+PLUGIN_NAME="$(
+	grep -E '^[[:space:]]*\*[[:space:]]*Plugin Name:[[:space:]]*' "${MAIN_FILE}" \
+		| head -n 1 \
+		| sed -E 's/^[[:space:]]*\*[[:space:]]*Plugin Name:[[:space:]]*//' \
+		| sed -E 's/[[:space:]]+$//'
+)"
+
+if [[ -z "${PLUGIN_NAME}" ]]; then
+	echo "error: could not read Plugin Name from ${MAIN_FILE}" >&2
+	exit 1
+fi
+
+# Slugify the display name for the ZIP filename (e.g. "Sikora Custom Login" → sikora-custom-login.zip).
+ZIP_SLUG="$(
+	printf '%s' "${PLUGIN_NAME}" \
+		| tr '[:upper:]' '[:lower:]' \
+		| sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
+)"
+ZIP_NAME="${ZIP_SLUG}.zip"
 ZIP_PATH="${ROOT_DIR}/${ZIP_NAME}"
 BUILD_DIR="$(mktemp -d "${TMPDIR:-/tmp}/${PLUGIN_SLUG}-build.XXXXXX")"
 STAGE_DIR="${BUILD_DIR}/${PLUGIN_SLUG}"
