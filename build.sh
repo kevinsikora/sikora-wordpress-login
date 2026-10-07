@@ -61,7 +61,6 @@ INCLUDE_FILES=(
 	"readme.txt"
 	"assets/admin.js"
 	"assets/login.css"
-	"assets/.htaccess"
 )
 
 for path in "${INCLUDE_FILES[@]}"; do
