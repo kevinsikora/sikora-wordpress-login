@@ -6,7 +6,7 @@ Customize the WordPress login screen with a Media Library background image and a
 | --- | --- |
 | **Version** | 2.2.2 |
 | **Requires at least** | WordPress 6.0 |
-| **Tested up to** | 6.7 |
+| **Tested up to** | 7.1 |
 | **Requires PHP** | 7.4 |
 | **License** | [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html) |
 | **Tags** | login, custom login, branding, admin login, media library |

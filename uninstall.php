@@ -17,10 +17,10 @@ delete_transient( 'sikora_login_invalid_bg_notice' );
 
 // Multisite: remove options from each site.
 if ( is_multisite() ) {
-    $site_ids = get_sites( array( 'fields' => 'ids', 'number' => 0 ) );
+    $sikora_login_site_ids = get_sites( array( 'fields' => 'ids', 'number' => 0 ) );
 
-    foreach ( $site_ids as $site_id ) {
-        switch_to_blog( (int) $site_id );
+    foreach ( $sikora_login_site_ids as $sikora_login_site_id ) {
+        switch_to_blog( (int) $sikora_login_site_id );
         delete_option( 'sikora_login_logo_image' );
         delete_option( 'sikora_login_bg_image' );
         delete_option( 'sikora_login_bg_color' );
