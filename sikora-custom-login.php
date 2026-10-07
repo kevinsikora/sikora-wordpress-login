@@ -1080,6 +1080,27 @@ function sikora_register_settings_page() {
 add_action( 'admin_menu', 'sikora_register_settings_page' );
 
 /**
+ * Adds a Settings link on the Plugins list row for this plugin.
+ *
+ * @since 2.2.2
+ *
+ * @param string[] $links Existing plugin action links.
+ * @return string[]
+ */
+function sikora_login_plugin_action_links( $links ) {
+	$settings_link = sprintf(
+		'<a href="%s">%s</a>',
+		esc_url( admin_url( 'options-general.php?page=sikora-custom-login' ) ),
+		esc_html__( 'Settings', 'sikora-custom-login' )
+	);
+
+	array_unshift( $links, $settings_link );
+
+	return $links;
+}
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'sikora_login_plugin_action_links' );
+
+/**
  * Registers plugin options with the Settings API.
  *
  * Options are not exposed via the REST API and are registered with
