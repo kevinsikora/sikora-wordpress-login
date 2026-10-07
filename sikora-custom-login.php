@@ -1187,13 +1187,16 @@ function sikora_enqueue_admin_scripts( $hook ) {
 	wp_enqueue_style( 'sikora-custom-login-admin' );
 	wp_add_inline_style( 'sikora-custom-login-admin', sikora_login_admin_inline_css() );
 
-	wp_enqueue_script(
+	$admin_script_ver = sikora_login_asset_version( 'assets/admin.js' );
+
+	wp_register_script(
 		'sikora-custom-login-admin',
 		SIKORA_LOGIN_PLUGIN_URL . 'assets/admin.js',
 		array( 'jquery', 'media-editor', 'wp-color-picker' ),
-		sikora_login_asset_version( 'assets/admin.js' ),
+		$admin_script_ver,
 		true
 	);
+	wp_enqueue_script( 'sikora-custom-login-admin' );
 }
 add_action( 'admin_enqueue_scripts', 'sikora_enqueue_admin_scripts' );
 
@@ -1557,8 +1560,10 @@ add_filter( 'login_link_separator', 'sikora_login_filter_login_link_separator' )
 /**
  * Redirects password-reset login actions when that setting is enabled.
  *
- * Blocks `lostpassword`, `retrievepassword`, `resetpass`, and `rp`. Does nothing
- * when {@see SIKORA_LOGIN_DISABLE_RESET_OPTION} is off (unchecked in settings).
+ * Hooked to `login_form_lostpassword`, `login_form_retrievepassword`,
+ * `login_form_resetpass`, and `login_form_rp` so the blocked action is known
+ * without reading `$_REQUEST` (avoids nonce-verification sniff false positives).
+ * Does nothing when {@see SIKORA_LOGIN_DISABLE_RESET_OPTION} is off.
  *
  * @since 2.0.0
  *
@@ -1569,15 +1574,13 @@ function sikora_maybe_disable_lost_password() {
 		return;
 	}
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing of the login action.
-	$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : 'login';
-
-	if ( in_array( $action, array( 'lostpassword', 'retrievepassword', 'resetpass', 'rp' ), true ) ) {
-		wp_safe_redirect( wp_login_url() );
-		exit;
-	}
+	wp_safe_redirect( wp_login_url() );
+	exit;
 }
-add_action( 'login_init', 'sikora_maybe_disable_lost_password' );
+add_action( 'login_form_lostpassword', 'sikora_maybe_disable_lost_password' );
+add_action( 'login_form_retrievepassword', 'sikora_maybe_disable_lost_password' );
+add_action( 'login_form_resetpass', 'sikora_maybe_disable_lost_password' );
+add_action( 'login_form_rp', 'sikora_maybe_disable_lost_password' );
 
 /**
  * Filters the login logo URL to the site home URL.
